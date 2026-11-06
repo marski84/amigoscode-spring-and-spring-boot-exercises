@@ -144,8 +144,7 @@ Delete all the manual `List`-based code. Update `OrderService` to use JPA method
 **File:** `order/OrderRepository.java`
 
 ```java
-@Query("SELECT o FROM Order o WHERE o.totalAmount > :amount")
-List<Order> findByTotalAmountGreaterThan(@Param("amount") double amount);
+q;
 ```
 
 ---

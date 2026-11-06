@@ -1,8 +1,20 @@
 package com.amigoscode.order;
 
 import com.amigoscode.order.dto.CreateOrderRequest;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,7 +23,12 @@ import java.util.List;
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
+    Logger logger = LoggerFactory.getLogger(OrderController.class);
+
     private final OrderService orderService;
+
+    @Value("${app.order.max-items}")
+    private int maxItems;
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
@@ -47,7 +64,7 @@ public class OrderController {
     //  to trigger bean validation on CreateOrderRequest
     //  Hint: import jakarta.validation.Valid
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
+    public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         Order order = new Order();
         order.setDescription(request.getDescription());
         order.setStatus(request.getStatus());
@@ -79,6 +96,14 @@ public class OrderController {
     // TODO: 15 - Inject the property app.order.max-items using @Value
     //  Create a GET endpoint "/api/v1/orders/max-items" that returns the value
     //  Hint: @Value("${app.order.max-items}")
+
+    @GetMapping("/api/v1/order/max-items")
+    public ResponseEntity<List<Order>> getMaxItem() {
+        List<Order> orderList = orderService.getAllOrders().stream()
+                .limit(maxItems)
+                .toList();
+        return ResponseEntity.ok(orderList);
+    }
 
     // TODO: 17 - Replace all System.out.println statements in this class with Logger
     //  private static final Logger log = LoggerFactory.getLogger(OrderController.class);

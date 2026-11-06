@@ -1,5 +1,6 @@
 package com.amigoscode.order;
 
+import com.amigoscode.order.exception.OrderNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,28 +15,41 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public List<Order> getAllOrders() {
+    List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    public Optional<Order> getOrderById(Long id) {
+    Optional<Order> getOrderById(final Long id) {
         return orderRepository.findById(id);
     }
 
-    public List<Order> getOrdersByStatus(String status) {
-        return orderRepository.findByStatus(status);
+    List<Order> getOrdersByStatus(final String status) {
+        return getAllOrders().stream().filter(o -> o.getStatus().equals(status)).toList();
     }
 
-    public Order createOrder(Order order) {
+    Order createOrder(final Order order) {
         return orderRepository.save(order);
     }
 
-    public void updateOrder(Order order) {
-        orderRepository.update(order);
+    void updateOrder(final Order order) {
+        Order orderToUpdate = orderRepository.findById(order.getId())
+                .orElseThrow(() -> new OrderNotFoundException(order.getId()));
+
+        orderToUpdate.setDescription(order.getDescription());
+        orderToUpdate.setCustomerEmail(order.getCustomerEmail());
+        orderToUpdate.setStatus(order.getStatus());
+        orderToUpdate.setInternalNotes(order.getInternalNotes());
+        orderToUpdate.setTotalAmount(order.getTotalAmount());
+
+        orderRepository.save(orderToUpdate);
     }
 
     public boolean deleteOrder(Long id) {
-        return orderRepository.deleteById(id);
+        if (orderRepository.existsById(id)) {
+            orderRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
 }
